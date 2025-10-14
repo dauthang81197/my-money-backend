@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  app:
+    image: dauthang811/my-money-dev:latest
+    environment:
+      NODE_ENV: ${ENV}
+    ports:
+      - "8000:8000"
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    configs:
+      - source: my-money-dev
+        target: /app/.env
+    networks:
+      - app-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+configs:
+  my-money-backend-dev:
+    external: true
+
+networks:
+  app-net:
+    external: true
