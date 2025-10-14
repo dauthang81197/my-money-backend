@@ -1,7 +1,7 @@
 // src/users/users.service.ts
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { UserCredentialsEntity } from '@saved-project/entities';
+import { UserCredentialsEntity } from 'saved-entities';
 import { TypeORMRepository } from '../../database/typeorm.repository';
 
 @Injectable()

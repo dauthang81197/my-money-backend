@@ -8,7 +8,7 @@ import {
   CategoryEntity,
   TxnEntity,
   TxnSplitEntity,
-} from '@saved-project/entities';
+} from 'saved-entities';
 
 @Module({
   imports: [

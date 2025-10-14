@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
-import { UserSessionEntity } from '@saved-project/entities';
+import { Repository, MoreThan, IsNull } from 'typeorm';
+import { UserSessionEntity } from 'saved-entities';
 
 @Injectable()
 export class SessionsService {
   constructor(
     @InjectRepository(UserSessionEntity)
-    private repo: Repository<UserSessionEntity>
+    private repo: Repository<UserSessionEntity>,
   ) {}
 
   async create(userId: string, hours: number, ip?: string, ua?: string) {
@@ -18,7 +18,7 @@ export class SessionsService {
 
   async findActive(sid: string) {
     return this.repo.findOne({
-      where: { id: sid, revokedAt: null, expiresAt: MoreThan(new Date()) },
+      where: { id: sid, revokedAt: IsNull(), expiresAt: MoreThan(new Date()) },
     });
   }
 

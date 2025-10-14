@@ -17,7 +17,7 @@ import {
   AppUserEntity,
   CategoryEntity,
   UserCredentialsEntity,
-} from '@saved-project/entities';
+} from 'saved-entities';
 type JwtPayload = { sub: string; sid: string };
 
 @Injectable()

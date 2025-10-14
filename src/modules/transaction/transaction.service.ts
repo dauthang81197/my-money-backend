@@ -10,7 +10,7 @@ import {
   TxnEntity,
   TxnSplitEntity,
   TxnType,
-} from '@saved-project/entities';
+} from 'saved-entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateExpenseDto } from './dtos/create-expense.dto';
 import { Repository } from 'typeorm';

@@ -7,7 +7,7 @@ import {
   AppUserEntity,
   UserCredentialsEntity,
   UserSessionEntity,
-} from '@saved-project/entities';
+} from 'saved-entities';
 import { UserCredentialsRepository } from './user-credentials.repository';
 import { SessionsService } from './sessions.service';
 

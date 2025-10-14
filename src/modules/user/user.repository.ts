@@ -1,4 +1,4 @@
-import { AppUserEntity } from '@saved-project/entities';
+import { AppUserEntity } from 'saved-entities';
 import { DataSource } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { TypeORMRepository } from '../../database/typeorm.repository';
