@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: dauthang811/my-money-backend-dev:latest
+    image: dauthang811/my-money-backend:latest
     environment:
       NODE_ENV: ${ENV}
     ports:
