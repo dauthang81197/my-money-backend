@@ -10,7 +10,7 @@ async function createMigration(migrationName: string): Promise<void> {
 
   try {
     const { stdout, stderr } = await execAsync(
-      `npm run typeorm -- migration:create ${migrationFullPath}`
+      `npm run typeorm -- migration:create ${migrationFullPath}`,
     );
 
     console.log(stdout);

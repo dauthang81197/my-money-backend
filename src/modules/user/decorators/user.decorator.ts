@@ -7,5 +7,5 @@ export const AuthUser = createParamDecorator(
     const user = ctx.switchToHttp().getRequest<Request>().user as AppUserEntity;
 
     return data ? user && user[data] : user;
-  }
+  },
 );

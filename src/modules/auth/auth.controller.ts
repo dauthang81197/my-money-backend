@@ -26,7 +26,7 @@ export class AuthController {
   @Post('login')
   async login(
     @Req() req: any,
-    @Body() dto: LoginDto
+    @Body() dto: LoginDto,
     // @Headers('user-agent') ua: string
   ) {
     const ip = req.ip || req.socket?.remoteAddress;

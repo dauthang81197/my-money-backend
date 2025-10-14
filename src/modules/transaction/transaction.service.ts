@@ -29,7 +29,7 @@ export class TransactionService {
     @InjectRepository(CategoryEntity)
     private readonly catRepo: Repository<CategoryEntity>,
     @InjectRepository(AppUserEntity)
-    private readonly userRepo: Repository<AppUserEntity>
+    private readonly userRepo: Repository<AppUserEntity>,
   ) {}
 
   async createExpense(userId: string, dto: CreateExpenseDto) {
@@ -90,7 +90,7 @@ export class TransactionService {
 
     if (!start.isValid || !end.isValid) {
       throw new BadRequestException(
-        'startDate/endDate không hợp lệ (YYYY-MM-DD)'
+        'startDate/endDate không hợp lệ (YYYY-MM-DD)',
       );
     }
     if (end < start) {

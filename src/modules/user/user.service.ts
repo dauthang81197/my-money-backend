@@ -6,7 +6,7 @@ import { UserCredentialsRepository } from './user-credentials.repository';
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly userCredentitalsRepository: UserCredentialsRepository
+    private readonly userCredentitalsRepository: UserCredentialsRepository,
   ) {}
 
   findByEmail(email: string) {
@@ -20,7 +20,7 @@ export class UserService {
   async touchLastLogin(userId: string) {
     await this.userCredentitalsRepository.update(
       { userId },
-      { lastLoginAt: new Date() }
+      { lastLoginAt: new Date() },
     );
   }
 }

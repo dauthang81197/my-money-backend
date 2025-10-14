@@ -14,7 +14,7 @@ export class TypeORMRepository<T extends ObjectLiteral> extends Repository<T> {
     if (!queryBuilder) {
       queryBuilder = this.createQueryBuilder('document').orderBy(
         'document.createdAt',
-        'ASC'
+        'ASC',
       );
     }
 
@@ -41,7 +41,7 @@ export class TypeORMRepository<T extends ObjectLiteral> extends Repository<T> {
   }
 
   async listOrPaging(
-    query: PaginationOrPagingParams<T>
+    query: PaginationOrPagingParams<T>,
   ): Promise<PaginationResult<T>> {
     const { limit = 10, page = 1, isSelectAll } = query;
     let queryBuilder = query.queryBuilder;
@@ -49,7 +49,7 @@ export class TypeORMRepository<T extends ObjectLiteral> extends Repository<T> {
     if (!queryBuilder) {
       queryBuilder = this.createQueryBuilder('document').orderBy(
         'document.createdAt',
-        'ASC'
+        'ASC',
       );
     }
 

@@ -10,7 +10,7 @@ async function generateMigration(migrationName: string): Promise<void> {
 
   try {
     const { stdout, stderr } = await execAsync(
-      `npm run typeorm -- migration:generate -d ./app/backend/auth-api/src/database/ormconfig.ts ${migrationFullPath}`
+      `npm run typeorm -- migration:generate -d ./app/backend/auth-api/src/database/ormconfig.ts ${migrationFullPath}`,
     );
 
     console.log(stdout);

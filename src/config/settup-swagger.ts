@@ -7,11 +7,11 @@ export function setupSwagger(app: INestApplication) {
   const configService = app.get(ConfigService);
   if (
     [Environment.test, Environment.production].indexOf(
-      configService.get('ENV') as Environment
+      configService.get('ENV'),
     ) === -1
   ) {
     const serverUrl = `${configService.get(
-      'APP_SERVER_METHOD'
+      'APP_SERVER_METHOD',
     )}://${configService.get('APP_SERVER_HOST')}`;
 
     const serviceApi = `${configService
