@@ -7,7 +7,7 @@ type JwtPayload = { sub: string; sid: string };
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
-  'jwt-refresh'
+  'jwt-refresh',
 ) {
   constructor(configService: ConfigService) {
     super({

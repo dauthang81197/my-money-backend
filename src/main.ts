@@ -23,7 +23,7 @@ async function bootstrap() {
       transform: true,
       whitelist: true,
       errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-    })
+    }),
   );
 
   app.use(cookieParser(process.env.APP_SECRET));

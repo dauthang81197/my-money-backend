@@ -26,7 +26,7 @@ export class AuthService {
     private users: UserService,
     private sessions: SessionsService,
     private jwt: JwtService,
-    private dataSource: DataSource
+    private dataSource: DataSource,
   ) {}
 
   /** Xác thực user từ email/password */
@@ -46,13 +46,13 @@ export class AuthService {
     user,
     rememberMe = false,
     ip?: string,
-    ua?: string
+    ua?: string,
   ): Promise<Tokens> {
     const session = await this.sessions.create(
       user.id,
       rememberMe ? 24 * 30 : 24,
       ip,
-      ua
+      ua,
     );
     const payload: JwtPayload = { sub: user.id, sid: session.id };
 
@@ -121,7 +121,7 @@ export class AuthService {
           userId: user.id,
           passwordHash,
           passwordAlgo: 'argon2id',
-        })
+        }),
       );
 
       // 3) Seed mặc định (không bắt buộc nhưng rất hữu ích)
@@ -133,7 +133,7 @@ export class AuthService {
           type: AccountType.CASH,
           currencyCode: user.currencyCode,
           openingBalance: 0,
-        })
+        }),
       );
 
       // 3.2 Tạo vài category cơ bản
@@ -145,7 +145,7 @@ export class AuthService {
         { name: 'Thu nhập', kind: 'INCOME' as const },
       ];
       await catRepo.save(
-        seedCats.map((c) => catRepo.create({ userId: user.id, ...c }))
+        seedCats.map((c) => catRepo.create({ userId: user.id, ...c })),
       );
 
       return user;

@@ -4,7 +4,7 @@ import { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SeederOptions } from 'typeorm-extension';
 
-import {  Environment } from '../common';
+import { Environment } from '../common';
 import { ENTITIES } from 'src/constants';
 
 const connectionOptions: TypeOrmModuleOptions &

@@ -29,21 +29,21 @@ export class RegisterDto {
   fullName?: string;
 
   @ApiProperty({
-    example: 'Asia/Ho_Chi_Minh'
+    example: 'Asia/Ho_Chi_Minh',
   })
   @IsString()
   @IsOptional()
   tz?: string; // mặc định Asia/Ho_Chi_Minh
 
   @ApiProperty({
-    example: 'VND'
+    example: 'VND',
   })
   @IsString()
   @IsOptional()
   currencyCode?: string; // mặc định VND
 
   @ApiProperty({
-    example: true
+    example: true,
   })
   @IsBoolean()
   acceptTerms!: boolean; // bắt buộc true (điều khoản)
