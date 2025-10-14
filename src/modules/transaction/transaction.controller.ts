@@ -1,11 +1,22 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { TransactionService } from './transaction.service';
-import { CreateExpenseDto } from './dtos/create-expense.dto';
+import { CreateExpenseDto, UpdateExpenseDto } from './dtos/create-expense.dto';
 import { ListExpenseRangeQuery } from './dtos/list-expense-query.dto';
 import { Authenticate } from '../../decorators/auth.decorator';
 import { GetUser } from '../../decorators/get-user.decorator';
 import { QueryTransactionHistoryReqDto } from './dtos/list-transaction-history.dto';
+import { GetTimezone } from '../../decorators';
 
 @Controller('transaction')
 @ApiTags('transaction')
@@ -19,13 +30,40 @@ export class TransactionController {
   }
 
   @Post('expense')
-  createExpense(@Req() req: any, @Body() dto: CreateExpenseDto) {
+  createExpense(
+    @Req() req: any,
+    @Body() dto: CreateExpenseDto,
+    @GetTimezone() tz: string,
+  ) {
     const userId = req.user.userId as string;
-    return this.service.createExpense(userId, dto);
+    return this.service.createExpense(userId, dto, tz);
+  }
+
+  @Get(':id/expense')
+  getExpenses(@Param('id') id: string, @GetTimezone() tz: string) {
+    return this.service.getTransaction(id);
+  }
+
+  @Delete(':id/expense')
+  deleteExpenses(@Param('id') id: string, @GetTimezone() tz: string) {
+    return this.service.deleteTransaction(id);
+  }
+
+  @Put(':id/expense')
+  editExpenses(
+    @Param('id') id: string,
+    @Body() dto: UpdateExpenseDto,
+    @GetTimezone() tz: string,
+  ) {
+    return this.service.updateTransaction(id, dto, tz);
   }
 
   @Get('expenses')
-  listExpenses(@Req() req: any, @Query() q: ListExpenseRangeQuery) {
+  listExpenses(
+    @Req() req: any,
+    @Query() q: ListExpenseRangeQuery,
+    @GetTimezone() tz: string,
+  ) {
     const userId = req.user.userId as string;
     return this.service.listExpensesByRange(userId, q);
   }

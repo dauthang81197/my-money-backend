@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 // import I18nModuleConfig from './i18n';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { CategoryModule } from './modules/category/category.module';
+import { TimezoneMiddleware } from './middlewares/timezone.middleware';
 
 export const MODULE_IMPORTS = [
   UserModule,
@@ -44,4 +45,8 @@ export const MODULE_IMPORTS = [
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(TimezoneMiddleware).forRoutes('*');
+  }
+}
