@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: dauthang811/my-money-dev:latest
+    image: dauthang811/my-money-backend-dev:latest
     environment:
       NODE_ENV: ${ENV}
     ports:
@@ -14,7 +14,7 @@ services:
           cpus: '0.5'
           memory: 512M
     configs:
-      - source: my-money-dev
+      - source: my-money-backend-dev
         target: /app/.env
     networks:
       - app-net
