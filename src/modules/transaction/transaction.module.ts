@@ -9,6 +9,7 @@ import {
   TxnEntity,
   TxnSplitEntity,
 } from 'saved-entities';
+import { TxnRepository } from './repositories/txn.repository';
 
 @Module({
   imports: [
@@ -21,6 +22,6 @@ import {
     ]),
   ],
   controllers: [TransactionController],
-  providers: [TransactionService],
+  providers: [TransactionService, TxnRepository],
 })
 export class TransactionModule {}

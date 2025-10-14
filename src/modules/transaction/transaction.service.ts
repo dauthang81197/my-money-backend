@@ -13,15 +13,18 @@ import {
 } from 'saved-entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateExpenseDto } from './dtos/create-expense.dto';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { DateTime } from 'luxon';
 import { ListExpenseRangeQuery } from './dtos/list-expense-query.dto';
+import { QueryTransactionHistoryReqDto } from './dtos/list-transaction-history.dto';
+import { SortCommonEnum } from '../../common';
+import { PaginationResult } from '../../interfaces';
+import { TxnRepository } from './repositories/txn.repository';
 
 @Injectable()
 export class TransactionService {
   constructor(
-    @InjectRepository(TxnEntity)
-    private readonly txnRepo: Repository<TxnEntity>,
+    private readonly txnRepo: TxnRepository,
     @InjectRepository(TxnSplitEntity)
     private readonly splitRepo: Repository<TxnSplitEntity>,
     @InjectRepository(AccountEntity)
@@ -117,5 +120,72 @@ export class TransactionService {
       .orderBy('DATE(t.transactionDate)', 'DESC')
       .getRawMany();
     return rows;
+  }
+
+  async getTransactionHistory(
+    query: QueryTransactionHistoryReqDto,
+    userLogin,
+  ): Promise<PaginationResult<TxnEntity>> {
+    const { limit, page } = query;
+    const qb = this.qbGetList(query, userLogin);
+    return await this.txnRepo.list({
+      limit: limit,
+      page: page,
+      queryBuilder: qb,
+    });
+  }
+
+  private qbGetList(
+    query: QueryTransactionHistoryReqDto,
+    useLogin,
+  ): SelectQueryBuilder<TxnEntity> {
+    const qb = this.txnRepo
+      .createQueryBuilder('t')
+      .select([
+        't.id',
+        't.type',
+        't.note',
+        't.amount',
+        't.transactionTime',
+        't.transactionDate',
+        'splits.id',
+        'c.id',
+        'c.name',
+      ])
+      .leftJoin('t.splits', 'splits')
+      .leftJoin('splits.category', 'c');
+    qb.where('t.userId = :userId', {
+      userId: useLogin?.userId,
+    });
+    this.qbWithQuery(qb, query);
+
+    return qb;
+  }
+
+  private qbWithQuery(
+    qb: SelectQueryBuilder<TxnEntity>,
+    query: QueryTransactionHistoryReqDto,
+  ) {
+    if (query) {
+      const { searchKey, sortBy } = query;
+
+      if (searchKey) {
+        const upperCaseSearchKey = searchKey.toUpperCase();
+        qb.andWhere('(UPPER(t.note) LIKE :note)', {
+          note: `%${upperCaseSearchKey}%`,
+        });
+      }
+
+      switch (sortBy) {
+        case SortCommonEnum.DATE_ASC:
+          qb.orderBy('t.transactionTime', SortCommonEnum.ASC);
+          break;
+        case SortCommonEnum.DATE_DESC:
+          qb.orderBy('t.transactionTime', SortCommonEnum.DESC);
+          break;
+        default:
+          qb.orderBy('t.transactionTime', SortCommonEnum.DESC);
+      }
+    }
   }
 }

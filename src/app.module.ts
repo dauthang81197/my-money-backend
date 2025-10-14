@@ -10,8 +10,14 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
 import { TransactionModule } from './modules/transaction/transaction.module';
+import { CategoryModule } from './modules/category/category.module';
 
-export const MODULE_IMPORTS = [UserModule, AuthModule, TransactionModule];
+export const MODULE_IMPORTS = [
+  UserModule,
+  AuthModule,
+  TransactionModule,
+  CategoryModule,
+];
 
 @Module({
   imports: [
