@@ -9,8 +9,9 @@ import { join } from 'path';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
+import { TransactionModule } from './modules/transaction/transaction.module';
 
-export const MODULE_IMPORTS = [UserModule, AuthModule];
+export const MODULE_IMPORTS = [UserModule, AuthModule, TransactionModule];
 
 @Module({
   imports: [
