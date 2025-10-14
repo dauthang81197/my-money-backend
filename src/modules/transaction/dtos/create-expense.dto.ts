@@ -50,3 +50,5 @@ export class CreateExpenseDto {
   @IsOptional()
   currencyCode?: string; // mặc định theo user
 }
+
+export class UpdateExpenseDto extends CreateExpenseDto {}

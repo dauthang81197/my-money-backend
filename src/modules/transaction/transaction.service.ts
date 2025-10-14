@@ -12,7 +12,7 @@ import {
   TxnType,
 } from 'saved-entities';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateExpenseDto } from './dtos/create-expense.dto';
+import { CreateExpenseDto, UpdateExpenseDto } from './dtos/create-expense.dto';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { DateTime } from 'luxon';
 import { ListExpenseRangeQuery } from './dtos/list-expense-query.dto';
@@ -35,7 +35,7 @@ export class TransactionService {
     private readonly userRepo: Repository<AppUserEntity>,
   ) {}
 
-  async createExpense(userId: string, dto: CreateExpenseDto) {
+  async createExpense(userId: string, dto: CreateExpenseDto, tz: string) {
     const [acc, cat, user] = await Promise.all([
       this.accRepo.findOne({ where: { userId } }),
       this.catRepo.findOne({ where: { id: dto.categoryId, userId } }),
@@ -45,7 +45,6 @@ export class TransactionService {
     if (!cat) throw new NotFoundException('Category not found');
     if (!user) throw new NotFoundException('User not found');
 
-    const tz = user.tz ?? 'Asia/Ho_Chi_Minh';
     const occurred = DateTime.fromISO(dto.occurredAt);
     const occurredUtc = occurred.toUTC();
     const txnDate = occurredUtc.setZone(tz).toISODate(); // yyyy-mm-dd
@@ -86,10 +85,9 @@ export class TransactionService {
 
   async listExpensesByRange(userId: string, q: ListExpenseRangeQuery) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
-    const tz = user?.tz ?? 'Asia/Ho_Chi_Minh';
 
-    const start = DateTime.fromFormat(q.startDate, 'yyyy-MM-dd', { zone: tz });
-    const end = DateTime.fromFormat(q.endDate, 'yyyy-MM-dd', { zone: tz });
+    const start = DateTime.fromFormat(q.startDate, 'yyyy-MM-dd');
+    const end = DateTime.fromFormat(q.endDate, 'yyyy-MM-dd');
 
     if (!start.isValid || !end.isValid) {
       throw new BadRequestException(
@@ -100,7 +98,6 @@ export class TransactionService {
       throw new BadRequestException('endDate phải >= startDate');
     }
 
-    // query theo cột transactionDate (đã là "ngày theo tz user")
     const startD = start.toISODate()!;
     const endExclusive = end.plus({ days: 1 }).toISODate()!; // nửa mở
 
@@ -187,5 +184,56 @@ export class TransactionService {
           qb.orderBy('t.transactionTime', SortCommonEnum.DESC);
       }
     }
+  }
+
+  async getTransaction(id: string) {
+    return await this.txnRepo.findOne({
+      where: {
+        id,
+      },
+      relations: ['splits', 'splits.category'],
+    });
+  }
+
+  async deleteTransaction(id: string) {
+    const txn = await this.getTransaction(id);
+    if (txn) {
+      await Promise.all([
+        this.splitRepo.softDelete(id),
+        this.txnRepo.softDelete(id),
+      ]);
+      return {
+        message: 'Deleted',
+      };
+    }
+    throw new NotFoundException();
+  }
+
+  async updateTransaction(id: string, dto: UpdateExpenseDto, tz) {
+    const txn = await this.getTransaction(id);
+    if (!txn) {
+      throw new NotFoundException();
+    }
+    const occurred = DateTime.fromISO(dto.occurredAt);
+    const occurredUtc = occurred.toUTC();
+    const txnDate = occurredUtc.setZone(tz).toISODate();
+
+    await Promise.all([
+      this.splitRepo.update(id, {
+        categoryId: dto?.categoryId,
+        amount: dto?.amount,
+      }),
+      this.txnRepo.update(txn?.splits?.[0]?.id, {
+        amount: dto?.amount,
+        note: dto?.note,
+        merchantId: dto?.merchantId,
+        transactionDate: txnDate!,
+        transactionTime: occurredUtc,
+      }),
+    ]);
+
+    return {
+      message: 'Updated',
+    };
   }
 }
