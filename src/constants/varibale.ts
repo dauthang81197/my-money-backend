@@ -19,6 +19,10 @@ import {
   AccountEntity,
   UserCredentialsEntity,
   UserSessionEntity,
+  StravaActivityEntity,
+  StravaAthleteEntity,
+  StravaActivityMapEntity,
+  StravaActivityStatEntity,
 } from 'saved-entities';
 
 export const ENTITIES = [
@@ -35,4 +39,8 @@ export const ENTITIES = [
   AccountEntity,
   UserCredentialsEntity,
   UserSessionEntity,
+  StravaActivityEntity,
+  StravaAthleteEntity,
+  StravaActivityMapEntity,
+  StravaActivityStatEntity,
 ];

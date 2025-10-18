@@ -5,7 +5,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { SeederOptions } from 'typeorm-extension';
 
 import { Environment } from '../common';
-import { ENTITIES } from 'src/constants';
+import { ENTITIES } from '../constants';
 
 const connectionOptions: TypeOrmModuleOptions &
   SeederOptions &
@@ -31,9 +31,9 @@ const connectionOptions: TypeOrmModuleOptions &
     : ['warn', 'error'],
   migrationsTableName: 'migration',
   migrations: [join(__dirname, '..', 'database/migrations/*{.js,.ts}')],
-  seeds: [join(__dirname, '..', 'database/seeds/*.seeder.{ts,js}')],
-  factories: [join(__dirname, '..', 'database/factories/*.factory.{ts,js}')],
-  subscribers: [join(__dirname, '..', 'modules/**/*.subscriber.{ts,js}')],
+  // seeds: [join(__dirname, '..', 'database/seeds/*.seeder.{ts,js}')],
+  seeds: ['src/database/seeds/*.seeder.{ts,js}'],
+  // subscribers: [join(__dirname, '..', 'modules/**/*.subscriber.{ts,js}')],
 };
 
 const dataSource = new DataSource(connectionOptions);
