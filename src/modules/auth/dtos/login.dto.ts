@@ -2,11 +2,15 @@ import { IsEmail, IsString, IsBoolean, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { AppUserEntity } from 'saved-entities';
 export class LoginDto {
-  @ApiProperty()
+  @ApiProperty({
+    example: 'dauthang811@gmail.com',
+  })
   @IsEmail()
   email!: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    example: 'Admin@123',
+  })
   @IsString()
   password!: string;
 

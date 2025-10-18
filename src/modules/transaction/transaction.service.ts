@@ -20,6 +20,7 @@ import { QueryTransactionHistoryReqDto } from './dtos/list-transaction-history.d
 import { SortCommonEnum } from '../../common';
 import { PaginationResult } from '../../interfaces';
 import { TxnRepository } from './repositories/txn.repository';
+import { getRangeTime } from './transaction.utils';
 
 @Injectable()
 export class TransactionService {
@@ -130,6 +131,16 @@ export class TransactionService {
       page: page,
       queryBuilder: qb,
     });
+  }
+
+  async getCountCategories(userId: string, q: ListExpenseRangeQuery) {
+    const { startD, endD } = getRangeTime(q);
+    return this.txnRepo.getCountCategories(userId, startD, endD);
+  }
+
+  async getDashboard(userId: string, q: ListExpenseRangeQuery) {
+    const { startD, endD } = getRangeTime(q);
+    return this.txnRepo.getDashboard(userId, startD, endD);
   }
 
   private qbGetList(

@@ -17,6 +17,7 @@ import { Authenticate } from '../../decorators/auth.decorator';
 import { GetUser } from '../../decorators/get-user.decorator';
 import { QueryTransactionHistoryReqDto } from './dtos/list-transaction-history.dto';
 import { GetTimezone } from '../../decorators';
+import { UserLoginDto } from '../../common';
 
 @Controller('transaction')
 @ApiTags('transaction')
@@ -66,5 +67,21 @@ export class TransactionController {
   ) {
     const userId = req.user.userId as string;
     return this.service.listExpensesByRange(userId, q);
+  }
+
+  @Get('categories')
+  getCountCategories(
+    @GetUser() userLogin: UserLoginDto,
+    @Query() q: ListExpenseRangeQuery,
+  ) {
+    return this.service.getCountCategories(userLogin?.userId, q);
+  }
+
+  @Get('dashboard')
+  getDashboard(
+    @GetUser() userLogin: UserLoginDto,
+    @Query() q: ListExpenseRangeQuery,
+  ) {
+    return this.service.getDashboard(userLogin?.userId, q);
   }
 }

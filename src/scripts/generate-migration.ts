@@ -3,14 +3,14 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-const dataSourcePath = './libs/entities/src/database/migrations';
+const dataSourcePath = './src/database/migrations';
 
 async function generateMigration(migrationName: string): Promise<void> {
   const migrationFullPath = `${dataSourcePath}/${migrationName}`;
 
   try {
     const { stdout, stderr } = await execAsync(
-      `npm run typeorm -- migration:generate -d ./app/backend/auth-api/src/database/ormconfig.ts ${migrationFullPath}`,
+      `npm run typeorm -- migration:generate -d src/database/ormconfig.ts ${migrationFullPath}`,
     );
 
     console.log(stdout);
