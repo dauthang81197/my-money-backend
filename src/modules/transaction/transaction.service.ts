@@ -175,12 +175,18 @@ export class TransactionService {
     query: QueryTransactionHistoryReqDto,
   ) {
     if (query) {
-      const { searchKey, sortBy } = query;
+      const { searchKey, sortBy, date } = query;
 
       if (searchKey) {
         const upperCaseSearchKey = searchKey.toUpperCase();
         qb.andWhere('(UPPER(t.note) LIKE :note)', {
           note: `%${upperCaseSearchKey}%`,
+        });
+      }
+
+      if (date) {
+        qb.andWhere('t.transactionDate = :date', {
+          date,
         });
       }
 
