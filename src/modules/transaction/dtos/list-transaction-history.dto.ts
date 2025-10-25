@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { QueryPaginationDto } from '../../../common/dtos/query-pagination.dto';
 import { Optional } from '@nestjs/common';
 import { SortCommonEnum } from '../../../common';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, IsString, Matches } from 'class-validator';
 
 export class QueryTransactionHistoryReqDto extends QueryPaginationDto {
   @ApiProperty({
@@ -20,4 +20,13 @@ export class QueryTransactionHistoryReqDto extends QueryPaginationDto {
   @IsOptional()
   @IsEnum(SortCommonEnum)
   sortBy: SortCommonEnum;
+
+  @ApiProperty({
+    example: '2025-06-30',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  date: string;
 }
