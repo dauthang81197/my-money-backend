@@ -234,13 +234,13 @@ export class TransactionService {
     const occurred = DateTime.fromISO(dto.occurredAt);
     const occurredUtc = occurred.toUTC();
     const txnDate = occurredUtc.setZone(tz).toISODate();
-
+    console.log(txn, 'sdfk');
     await Promise.all([
-      this.splitRepo.update(id, {
+      this.splitRepo.update(txn?.splits?.[0]?.id, {
         categoryId: dto?.categoryId,
         amount: dto?.amount,
       }),
-      this.txnRepo.update(txn?.splits?.[0]?.id, {
+      this.txnRepo.update(id, {
         amount: dto?.amount,
         note: dto?.note,
         merchantId: dto?.merchantId,
