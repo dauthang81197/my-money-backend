@@ -33,113 +33,98 @@ export class TxnRepository extends TypeORMRepository<TxnEntity> {
   async getDashboard(userId: string, startDate: Date, endDate: Date) {
     const result = await this.query(
       `
-        with
-        -- 📆 Thời gian hiện tại
-        params as (
-          select
-            $1::uuid as user_id,
-            $2::date as start_date,
-            $3::date as end_date,
-            ($2::date - (($3::date - $2::date) + 1)) as prev_start,
-            ($2::date - 1) as prev_end
+        WITH
+        params AS (
+          SELECT
+            $1::uuid AS user_id,
+            $2::date AS start_date,
+            $3::date AS end_date,
+            date_trunc('month', $2::date)::date AS cur_budget_start,
+            (date_trunc('month', $2::date) - INTERVAL '1 month')::date AS prev_budget_start
         ),
         -- 💰 Tổng kỳ hiện tại
-        current_txn as (
-          select
-            SUM(case when t.type = 'EXPENSE' then s.amount else 0 end) as total_expense,
-            SUM(case when t.type = 'INCOME' then s.amount else 0 end) as total_income
-          from
-            txn t
-              join txn_split s on
-              s.txn_id = t.id
-              join params p on
-              p.user_id = t.user_id
-          where
-            t.transaction_date between p.start_date and p.end_date
+        current_txn AS (
+          SELECT
+            COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN s.amount ELSE 0 END), 0) AS total_expense,
+            COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN s.amount ELSE 0 END), 0) AS total_income
+          FROM txn t
+          JOIN txn_split s ON s.txn_id = t.id
+          JOIN params p ON p.user_id = t.user_id
+          WHERE t.transaction_date BETWEEN p.start_date AND p.end_date
         ),
         -- 💰 Tổng kỳ trước
-        previous_txn as (
-          select
-            SUM(case when t.type = 'EXPENSE' then s.amount else 0 end) as total_expense,
-            SUM(case when t.type = 'INCOME' then s.amount else 0 end) as total_income
-          from
-            txn t
-              join txn_split s on
-              s.txn_id = t.id
-              join params p on
-              p.user_id = t.user_id
-          where
-            t.transaction_date between p.prev_start and p.prev_end
+        previous_txn AS (
+          SELECT
+            COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN s.amount ELSE 0 END), 0) AS total_expense,
+            COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN s.amount ELSE 0 END), 0) AS total_income
+          FROM txn t
+          JOIN txn_split s ON s.txn_id = t.id
+          JOIN params p ON p.user_id = t.user_id
+          WHERE t.transaction_date BETWEEN
+                (p.start_date - (p.end_date - p.start_date) - 1)
+                AND (p.start_date - 1)
         ),
-        -- 🎯 Mục tiêu kỳ hiện tại
-        --current_budget AS (
-        --  SELECT COALESCE(SUM(b.target_amount), 0) AS target
-        --  FROM budget b
-        --  JOIN params p ON p.user_id = b.user_id
-        --  WHERE b.start_date <= p.end_date AND b.end_date >= p.start_date
-        --),
-        -- 🎯 Mục tiêu kỳ trước
-        --previous_budget AS (
-        --  SELECT COALESCE(SUM(b.target_amount), 0) AS target
-        --  FROM budget b
-        --  JOIN params p ON p.user_id = b.user_id
-        --  WHERE b.start_date <= p.prev_end AND b.end_date >= p.prev_start
-        --),
+        -- 🎯 Ngân sách kỳ hiện tại
+        current_budget AS (
+          SELECT COALESCE(SUM(b.amount_limit), 0) AS target
+          FROM budget b
+          JOIN params p ON p.user_id = b.user_id
+          WHERE b.period = 'MONTHLY'
+          AND b.period_start = p.cur_budget_start
+        ),
+        -- 🎯 Ngân sách kỳ trước
+        previous_budget AS (
+          SELECT COALESCE(SUM(b.amount_limit), 0) AS target
+          FROM budget b
+          JOIN params p ON p.user_id = b.user_id
+          WHERE b.period = 'MONTHLY'
+          AND b.period_start = p.prev_budget_start
+        ),
         -- 📅 Hôm nay & hôm qua
-        today_txn as (
-          select
-            coalesce(SUM(s.amount), 0) as today_expense
-          from
-            txn t
-              join txn_split s on
-              s.txn_id = t.id
-              join params p on
-              p.user_id = t.user_id
-          where
-            t.type = 'EXPENSE'
-            and t.transaction_date = CURRENT_DATE
+        today_txn AS (
+          SELECT COALESCE(SUM(s.amount), 0) AS today_expense
+          FROM txn t
+          JOIN txn_split s ON s.txn_id = t.id
+          JOIN params p ON p.user_id = t.user_id
+          WHERE t.type = 'EXPENSE'
+          AND t.transaction_date = CURRENT_DATE
         ),
-        yesterday_txn as (
-          select
-            coalesce(SUM(s.amount), 0) as yesterday_expense
-          from
-            txn t
-              join txn_split s on
-              s.txn_id = t.id
-              join params p on
-              p.user_id = t.user_id
-          where
-            t.type = 'EXPENSE'
-            and t.transaction_date = CURRENT_DATE - 1
+        yesterday_txn AS (
+          SELECT COALESCE(SUM(s.amount), 0) AS yesterday_expense
+          FROM txn t
+          JOIN txn_split s ON s.txn_id = t.id
+          JOIN params p ON p.user_id = t.user_id
+          WHERE t.type = 'EXPENSE'
+          AND t.transaction_date = CURRENT_DATE - 1
         )
-        -- 🧩 Tổng hợp tất cả
-                select
-                  jsonb_build_object(
-                    'summary', jsonb_build_object(
-                    'total', ROUND(c.total_expense, 0),
-                    'totalChange', ROUND(((c.total_expense - p.total_expense) / nullif(p.total_expense, 0)) * 100, 1),
-        
-                    --    'target', ROUND(cb.target, 0),
-                    --    'targetChange', ROUND(((cb.target - pb.target) / NULLIF(pb.target, 0)) * 100, 1),
-        
-                    'balance', ROUND(c.total_income - c.total_expense, 0),
-                    'balanceChange', ROUND((
-                                             ((c.total_income - c.total_expense) - (p.total_income - p.total_expense))
-                                               / nullif((p.total_income - p.total_expense), 0)
-                                             ) * 100, 1),
-        
-                    'today', ROUND(td.today_expense, 0),
-                    'todayChange', ROUND(((td.today_expense - yd.yesterday_expense) / nullif(yd.yesterday_expense, 0)) * 100, 1)
-                               )
-                  ) as result
-                from
-                  current_txn c
-                    cross join previous_txn p
-                    --CROSS JOIN current_budget cb
-                    --CROSS JOIN previous_budget pb
-                    cross join today_txn td
-                    cross join yesterday_txn yd
-      `,
+      
+        SELECT jsonb_build_object(
+          'summary', jsonb_build_object(
+            'total', ROUND(c.total_expense, 0),
+            'totalChange', ROUND(((c.total_expense - p.total_expense) / NULLIF(p.total_expense, 0)) * 100, 1),
+      
+            'target', ROUND(cb.target, 0),
+            'targetChange', ROUND(((cb.target - pb.target) / NULLIF(pb.target, 0)) * 100, 1),
+      
+            'balance', ROUND(c.total_income - c.total_expense, 0),
+            'balanceChange', ROUND(
+              (((c.total_income - c.total_expense) - (p.total_income - p.total_expense)) /
+              NULLIF((p.total_income - p.total_expense), 0)) * 100, 1),
+      
+            'today', ROUND(td.today_expense, 0),
+            'todayChange', ROUND(
+              ((td.today_expense - yd.yesterday_expense) /
+              NULLIF(yd.yesterday_expense, 0)) * 100, 1)
+          )
+        ) AS result
+      
+        FROM current_txn c
+        CROSS JOIN previous_txn p
+        CROSS JOIN current_budget cb
+        CROSS JOIN previous_budget pb
+        CROSS JOIN today_txn td
+        CROSS JOIN yesterday_txn yd
+  `,
       [userId, startDate, endDate],
     );
     return result[0].result;

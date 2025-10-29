@@ -52,11 +52,15 @@ export class TransactionService {
 
     const currency =
       dto.currencyCode ?? acc.currencyCode ?? user.currencyCode ?? 'VND';
-
+    const category = await this.catRepo.findOne({
+      where: {
+        id: dto.categoryId,
+      },
+    });
     const txn = this.txnRepo.create({
       userId,
       accountId: acc.id,
-      type: TxnType.EXPENSE,
+      type: category.kind === 'INCOME' ? TxnType.INCOME : TxnType.EXPENSE,
       amount: dto.amount,
       currencyCode: currency,
       transactionTime: occurredUtc.toJSDate(),
@@ -107,6 +111,7 @@ export class TransactionService {
       .select('DATE(t.transactionDate)', 'date')
       .addSelect('SUM(s.amount)', 'totalAmount')
       .leftJoin('t.splits', 's')
+      .leftJoin('s.category', 'c')
       .where('t.userId = :userId', { userId })
       .andWhere('t.type = :type', { type: TxnType.EXPENSE })
       .andWhere('t.transactionDate >= :startD AND t.transactionDate < :endD', {
